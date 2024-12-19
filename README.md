@@ -211,6 +211,11 @@ Our best result is achieved with `U-Net`, `L=4` and `C=64` with a score of 0.908
 python -m run --L 4
 ```
 
-Or load an already trained model then use it to predict our samples in our case we should 
+## Predict AI crowd:
+
+To predict the AI crowd results we should run:
+```sh
+python -m predict --path <path to the model we should use> --out <submission file>
+```
 
 ---
