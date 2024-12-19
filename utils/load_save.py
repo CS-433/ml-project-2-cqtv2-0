@@ -34,7 +34,7 @@ def load_checkpoint(filename="checkpoint.pth.tar"):
     C = info['C']
     in_channels = info['in_channels']
     out_channels = info['out_channels']
-    device = torch,device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     match name:
         case 'unet':
             model = UNet(in_channels=in_channels, out_channels=out_channels, C=C, L=L).to(device)
