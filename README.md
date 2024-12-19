@@ -208,14 +208,14 @@ We tried different models and recorded at each epoch the validation f1 score to 
 
 Our best result is achieved with `U-Net`, `L=4` and `C=64` with a score of 0.908 F1 score on AIcrowd (The submission ID is `#278023`), if we want to achieve the same result again we gain train a new model form scratch using the following command:
 ```sh
-python -m run --L 4
+python -m run --L 4 --path <path of the file where we want to save the model>
 ```
 
-## Predict AI crowd:
+then run
 
-To predict the AI crowd results we should run:
 ```sh
-python -m predict --path <path to the model we should use> --out <submission file>
+python -m predict --path <path of the model> --out <submission file>
 ```
+
 
 ---
