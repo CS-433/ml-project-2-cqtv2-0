@@ -78,13 +78,13 @@ def patch_assembling(output_patches, x=384, y=584):
     Returns:
         output: The assembled image.
     """
-    eL = int(y / 2)
+    n = int(y / 2)
 
     output = np.empty(shape=(output_patches.shape[1], y, y))
     
-    out_cords = [(0, eL, 0, eL), (0, eL,y-eL, y), (y-eL, y, 0, eL), (y-eL, y, y-eL, y)]
+    out_cords = [(0, n, 0, n), (0, n,y-n, y), (y-n, y, 0, n), (y-n, y, y-n, y)]
     # Define the coordinates for the patches
-    in_coords = [(0, eL, 0, eL), (0, eL, x-eL, x), (x-eL, x, 0, eL), (x-eL, x, x-eL, x)]
+    in_coords = [(0, n, 0, n), (0, n, x-n, x), (x-n, x, 0, n), (x-n, x, x-n, x)]
     # Assign the patches to the output array
     for i in range(len(out_cords)):
         o_x1, o_x2, o_y1, o_y2 = out_cords[i]
