@@ -12,7 +12,9 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     # Load the model
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model, info = load_checkpoint(args.path)
+    model = model.to(device)
     sub = submission_creating(model, path_testing='data/testing/test_set_images/')
     np.savetxt(args.out, sub, delimiter=",", fmt = '%s')
     
