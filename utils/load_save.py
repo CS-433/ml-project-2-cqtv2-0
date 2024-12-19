@@ -34,11 +34,12 @@ def load_checkpoint(filename="checkpoint.pth.tar"):
     C = info['C']
     in_channels = info['in_channels']
     out_channels = info['out_channels']
+    device = torch,device('cuda' if torch.cuda.is_available() else 'cpu')
     match name:
         case 'unet':
-            model = UNet(in_channels=in_channels, out_channels=out_channels, C=C, L=L)
+            model = UNet(in_channels=in_channels, out_channels=out_channels, C=C, L=L).to(device)
         case 'nestedunet':
-            model = NestedUNet(n_channels=in_channels, n_classes=out_channels, C=C, L=L)
+            model = NestedUNet(n_channels=in_channels, n_classes=out_channels, C=C, L=L).to(device)
         case _:
             raise ValueError(f"Model {name} not found")
     model.load_state_dict(loader['model_state_dict'])
