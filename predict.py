@@ -8,7 +8,7 @@ from utils.utils import *
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict parameters')
     parser.add_argument('--path', type=str, help='Path to the model')
-    parser.add_argument('--out', type=str, default='submit.csv', help='submission file')
+    parser.add_argument('--out', type=str, default='submita.csv', help='submission file')
     
     args = parser.parse_args()
     # Load the model

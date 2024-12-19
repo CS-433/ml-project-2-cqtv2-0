@@ -48,27 +48,23 @@ def show_images(tensor_x, tensor_y, nrow=2, ncol=4):
             axes[2*i + 1, j].axis('off')
     
     plt.show()
-def patch_extracting(input, size=584, rsize=384):
+    
+def patch_extracting(input, x=584, y=384):
     """This function extracts the patches from the input image to get a better prediction.
 
     Args:
         input (np.array): The input image.
-        size (int, optional): The size of the input image. Defaults to 584.
-        rsize (int, optional): The size of the output image. Defaults to 384.
+        x (int, optional): The size of the input image. Defaults to 584.
+        y (int, optional): The target size of the patches of the input image. Defaults to 384.
 
     Returns:
         output: The patches extracted from the input image.
     """
     input_patches = [None, None, None, None]
-    coords = [
-    (0, rsize, 0, rsize),
-    (0, rsize, size-rsize, size),
-    (size-rsize, size, 0, rsize),
-    (size-rsize, size, size-rsize, size)]
+    coords = [(0, y, 0, y), (0, y, x-y, x), (x-y, x, 0 , y), (x-y, x, x-y, x)]
 
     for i, (y1, y2, x1, x2) in enumerate(coords):
-        input_patches[i] = np.transpose(input[y1:y2, x1:x2, :], (2, 0, 1))
-    
+        input_patches[i] = input[:, y1:y2, x1:x2]
     return torch.from_numpy(np.array(input_patches)).float()
 
 
@@ -77,27 +73,25 @@ def patch_assembling(output_patches, x=384, y=584):
 
     Args:
         output_patches (np.array): The patches to be assembled.§
-
+        x (int, optional): The size of the output image. Defaults to 384.
+        y (int, optional): target size of the output image. Defaults to 584.
     Returns:
         output: The assembled image.
     """
-    n = int(y / 2)
-    #We reassamble the patches
+    eL = int(y / 2)
+
     output = np.empty(shape=(output_patches.shape[1], y, y))
-
+    
+    out_cords = [(0, eL, 0, eL), (0, eL,y-eL, y), (y-eL, y, 0, eL), (y-eL, y, y-eL, y)]
     # Define the coordinates for the patches
-    coords = [
-        (0, 0, 0, 0),
-        (0, y-n, 0, x-n),
-        (y-n, 0, x-n, 0),
-        (y-n, y-n, x-n, x-n)
-    ]
-
+    in_coords = [(0, eL, 0, eL), (0, eL, x-eL, x), (x-eL, x, 0, eL), (x-eL, x, x-eL, x)]
     # Assign the patches to the output array
-    for i, (y1, y2, x1, x2) in enumerate(coords):
-        output[:, y1:y1+n, y2:y2+n] = output_patches[i, :, x1:x1+n, x2:x2+n]
+    for i in range(len(out_cords)):
+        o_x1, o_x2, o_y1, o_y2 = out_cords[i]
+        x1, x2, y1, y2 = in_coords[i]
+        output[:, o_x1:o_x2, o_y1:o_y2] = output_patches[i, :, x1:x2, y1:y2]
         
-        return output[0, :, :]
+    return output[0, :, :]
 
 def mask_to_submission(output, index):
     """This function creates the submission from the output. This function has been adapted from the original code from mask_to_submission.
@@ -123,7 +117,8 @@ def mask_to_submission(output, index):
 
 def submission_creating(model, path_testing='data/testing/test_set_images/'):
     submit_outputs = []
-    x_test = import_test(path_testing)
+    x_test = np.transpose(import_test(path_testing), (0, 3, 1, 2))
+    print(x_test.shape)
     model.eval()
     test_size = 608
     train_size = 400
@@ -131,9 +126,9 @@ def submission_creating(model, path_testing='data/testing/test_set_images/'):
     size = math.ceil(test_size*rsize/train_size)
     for index in range(1, 51):
         xi = x_test[index - 1]
-        xi = resize(xi, (size, size))
+        xi = resize(xi, (3, size, size))
         #Our model is trained on 384x384 images, so we need to resize the input image to 384x384
-        patch_extracted = patch_extracting(xi, size=size, rsize=rsize)
+        patch_extracted = patch_extracting(xi)
         
         #We predict our patches
         output = (model(patch_extracted)[0]).detach().cpu().numpy()
