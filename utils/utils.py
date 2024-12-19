@@ -118,7 +118,6 @@ def mask_to_submission(output, index):
 def submission_creating(model, path_testing='data/testing/test_set_images/'):
     submit_outputs = []
     x_test = np.transpose(import_test(path_testing), (0, 3, 1, 2))
-    print(x_test.shape)
     model.eval()
     test_size = 608
     train_size = 400
