@@ -106,7 +106,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=1e-5)
     criterion = DiceLoss()
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=10)
-    loss_history, valid_f1 = train(
+    loss_history, valid_f1, mean_losses, validation_loss_c  = train(
         model=model,
         optimizer=optimizer, 
         scheduler=scheduler, 

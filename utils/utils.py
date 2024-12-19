@@ -3,6 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 from skimage.transform import resize
 from PIL import Image
+import math 
 
 def import_test(path='data/testing/test_set_images/'):
     """This function imports the test images from the path specified
@@ -47,27 +48,31 @@ def show_images(tensor_x, tensor_y, nrow=2, ncol=4):
             axes[2*i + 1, j].axis('off')
     
     plt.show()
-def patch_extracting(input, size=584, resize=384):
+def patch_extracting(input, size=584, rsize=384):
     """This function extracts the patches from the input image to get a better prediction.
 
     Args:
         input (np.array): The input image.
         size (int, optional): The size of the input image. Defaults to 584.
-        resize (int, optional): The size of the output image. Defaults to 384.
+        rsize (int, optional): The size of the output image. Defaults to 384.
 
     Returns:
         output: The patches extracted from the input image.
     """
     input_patches = [None, None, None, None]
-    input_patches[0] = np.transpose(input[0:resize, 0:resize, :], (2, 0, 1))
-    input_patches[1] = np.transpose(input[0:resize, size-resize:size, :], (2, 0, 1))
-    input_patches[2] = np.transpose(input[size-resize:size, 0:resize, :], (2, 0, 1))
-    input_patches[3] = np.transpose(input[size-resize:size, size-resize:size, :], (2, 0, 1))
+    coords = [
+    (0, rsize, 0, rsize),
+    (0, rsize, size-rsize, size),
+    (size-rsize, size, 0, rsize),
+    (size-rsize, size, size-rsize, size)]
+
+    for i, (y1, y2, x1, x2) in enumerate(coords):
+        input_patches[i] = np.transpose(input[y1:y2, x1:x2, :], (2, 0, 1))
     
-    return torch.tensor(input_patches).float()
+    return torch.from_numpy(np.array(input_patches)).float()
 
 
-def patch_assembling(output_patches):
+def patch_assembling(output_patches, x=384, y=584):
     """This function assembles the patches into a single image.
 
     Args:
@@ -76,19 +81,26 @@ def patch_assembling(output_patches):
     Returns:
         output: The assembled image.
     """
-    x = 384
-    y = 584
-    eL = int(y / 2)
+    n = int(y / 2)
+    #We reassamble the patches
     output = np.empty(shape=(output_patches.shape[1], y, y))
-    output[:, 0:eL, 0:eL] = output_patches[0, :, 0:eL, 0:eL]
-    output[:, 0:eL, y-eL:y] = output_patches[1, :, 0:eL, x-eL:x]
-    output[:, y-eL:y, 0:eL] = output_patches[2, :, x-eL:x, 0:eL]
-    output[:, y-eL:y, y-eL:y] = output_patches[3, :, x-eL:x, x-eL:x]
-    
-    return output[0, :, :]
+
+    # Define the coordinates for the patches
+    coords = [
+        (0, 0, 0, 0),
+        (0, y-n, 0, x-n),
+        (y-n, 0, x-n, 0),
+        (y-n, y-n, x-n, x-n)
+    ]
+
+    # Assign the patches to the output array
+    for i, (y1, y2, x1, x2) in enumerate(coords):
+        output[:, y1:y1+n, y2:y2+n] = output_patches[i, :, x1:x1+n, x2:x2+n]
+        
+        return output[0, :, :]
 
 def mask_to_submission(output, index):
-    """This function creates the submission from the output.
+    """This function creates the submission from the output. This function has been adapted from the original code from mask_to_submission.
     
 
     Args:
@@ -113,19 +125,22 @@ def submission_creating(model, path_testing='data/testing/test_set_images/'):
     submit_outputs = []
     x_test = import_test(path_testing)
     model.eval()
-
+    test_size = 608
+    train_size = 400
+    rsize = 384
+    size = math.ceil(test_size*rsize/train_size)
     for index in range(1, 51):
         xi = x_test[index - 1]
-        xi = resize(xi, (resize, resize))
+        xi = resize(xi, (size, size))
         #Our model is trained on 384x384 images, so we need to resize the input image to 384x384
-        patch_extracted = patch_extracting(xi, size=584, resize=384)
+        patch_extracted = patch_extracting(xi, size=size, rsize=rsize)
         
         #We predict our patches
-        output = np.array(model(patch_extracted)[0])
+        output = (model(patch_extracted)[0]).detach().cpu().numpy()
         
         # We reassemble the patches
-        output = patch_assembling(output, resize, resize)
-        output = resize(output, (608, 608))
+        output = patch_assembling(output)
+        output = resize(output, (test_size, test_size))
         
         # We create the submission
         submit_output = mask_to_submission(output, index)

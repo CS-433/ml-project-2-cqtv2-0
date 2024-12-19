@@ -10,6 +10,10 @@
 
 ## Overview:
 
+In this project, we address the challenge of image segmentation by focusing on pixel-wise road segmentation from satellite images. Our goal is to accurately classify image patches into road and background classes, a task complicated by obstructions such as trees, buildings, and vehicles, as well as ambiguous structures like walkways and railroads.
+To tackle this, we employ state-of-the-art deep learning techniques using U-Net and U-Net++ architectures. These networks, known for their efficacy in biomedical image segmentation, are adapted for our satellite imagery dataset. By leveraging these architectures, we aim to optimize segmentation performance even with a relatively small training dataset.
+Our best model achieves an F1 score of 0.908 and a categorical accuracy of 0.949, demonstrating the effectiveness of U-Net and U-Net++ in this domain.
+
 ---
 
 ## Folder structure:
@@ -60,7 +64,7 @@ Now let's have a look at our project is sturctured:
 Training and test data is in the `data/` folder, where training data is in the `training/` folder, where as testing data in the  `test_set_images/` folder.
 ### Pre-trained Models:
 
-We already trained some models and can downloaded using this link [Here](https://drive.google.com/drive/folders/14NhAve6aNABjOpMuy992qnWQo69sOPww?usp=sharing).
+We already trained some models and provided those who performs the best and can downloaded using this link [Here](https://drive.google.com/drive/folders/14NhAve6aNABjOpMuy992qnWQo69sOPww?usp=sharing).
 
 Each of these models when loaded contains information about which model is it and their parameters:
 - `models_2_64.pth`: `U-Net` model with `L=2` and `C=64` trained during `50 epochs`
@@ -71,7 +75,7 @@ Each of these models when loaded contains information about which model is it an
 
 ## Training pipeline:
 
-To train our model we should follow the pipeline in `run.py`, where we start by separating training and validation and thenaugmenting our training set using the `data_augmentation` method in `dataprocessing/pre_process.py` then launch the chosen models with the `train` function in `scripts/train.py`.
+To train our model we should follow the pipeline in `run.py`, where we start by separating training and validation and then augmenting our training set using the `data_augmentation` method in `dataprocessing/pre_process.py` then launch the chosen models with the `train` function in `scripts/train.py`.
 
 ---
 
@@ -96,6 +100,7 @@ Before delving into our model training strategy, it’s crucial to define a stan
 - `Pillow`
 - `seaborn`
 - `jupyter`
+- `scikit-image`
 
 To ensure your setup is consistent and the program runs smoothly, you can either install each package manually or use the following command to install them all at once:
 
@@ -188,7 +193,7 @@ python -m submit --path <path to the model we want to use to predict> --out <sub
 
 ## Results:
 
-We tried different models and recorded at each epoch the validation f1 score to determine the best one.
+We tried different models and recorded at each epoch the validation f1 score to determine the best one. Here are our best results:
 
 ![Validation f1 for different models](images/f1s.png)
 
